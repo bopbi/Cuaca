@@ -6,7 +6,9 @@ import android.content.Intent;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.IBinder;
-import android.util.Log;
+
+import com.arjunalabs.android.cuaca.application.CuacaApplication;
+import com.arjunalabs.android.cuaca.application.CuacaEvent;
 
 import java.util.concurrent.TimeUnit;
 
@@ -106,14 +108,17 @@ public class CuacaService extends Service {
 
                    @Override
                    public void onError(Throwable e) {
-                       Log.e("Cuaca", "Error");
+                       ((CuacaApplication)getApplication()).getSubject().onError(e);
                        stopSelf();
                    }
 
                    @Override
                    public void onNext(CurrentWeather currentWeather) {
                         if (currentWeather.getWeather().size() > 0) {
-                            Log.i("Result",currentWeather.getWeather().get(0).getDescription());
+                            CuacaEvent cuacaEvent = new CuacaEvent();
+                            cuacaEvent.setSuccess(true);
+                            cuacaEvent.setCurrentWeather(currentWeather);
+                            ((CuacaApplication)getApplication()).getSubject().onNext(cuacaEvent);
                         }
                    }
                });

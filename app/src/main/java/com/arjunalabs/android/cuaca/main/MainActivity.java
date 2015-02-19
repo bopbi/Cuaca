@@ -1,14 +1,19 @@
 package com.arjunalabs.android.cuaca.main;
 
-import android.content.Intent;
-import android.location.Location;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.arjunalabs.android.cuaca.R;
+import com.arjunalabs.android.cuaca.application.CuacaApplication;
+import com.arjunalabs.android.cuaca.application.CuacaEvent;
 import com.arjunalabs.android.cuaca.base.BaseLocationActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.location.LocationServices;
+
+import rx.Observer;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * Created by bobbyadiprabowo on 2/8/15.
@@ -16,12 +21,14 @@ import com.google.android.gms.location.LocationServices;
 public class MainActivity extends BaseLocationActivity {
 
     int isGooglePlayAvailable = ConnectionResult.SERVICE_MISSING;
-    Location mLastLocation;
+    private Subscription subscription;
+    private MainView mainView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        mainView = (MainView) findViewById(R.id.main_view);
         checkGooglePlayServicesAvailable();
     }
 
@@ -30,11 +37,31 @@ public class MainActivity extends BaseLocationActivity {
         super.onResume();
         isGooglePlayAvailable = GooglePlayServicesUtil.isGooglePlayServicesAvailable(this);
         GooglePlayServicesUtil.getErrorDialog(isGooglePlayAvailable, this, 400);
+        subscription = ((CuacaApplication)getApplication()).getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<CuacaEvent>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Toast.makeText(MainActivity.this,e.getMessage(), Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onNext(CuacaEvent cuacaEvent) {
+                        Toast.makeText(MainActivity.this, cuacaEvent.getCurrentWeather().getWeather().get(0).getDescription(), Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        subscription.unsubscribe();
     }
 
     @Override
@@ -51,19 +78,9 @@ public class MainActivity extends BaseLocationActivity {
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
-                mGoogleApiClient);
-        Intent i = new Intent(this, CuacaService.class);
-        if (mLastLocation != null) {
-            // update weather information
-            i.putExtra(CuacaService.IntentKey, CuacaService.GET_WEATHER);
-            i.putExtra(CuacaService.LAT, mLastLocation.getLatitude());
-            i.putExtra(CuacaService.LNG, mLastLocation.getLongitude());
-        } else {
-            // update location first
-            i.putExtra(CuacaService.IntentKey, CuacaService.GET_LOCATION);
-        }
-        startService(i);
+        mainView.setLastLocation(LocationServices.FusedLocationApi.getLastLocation(
+                mGoogleApiClient));
+
     }
 
     @Override

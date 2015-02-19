@@ -49,4 +49,10 @@ public abstract class BaseLocationActivity extends ActionBarActivity implements 
     protected abstract void onGooglePlayRecoverCanceled();
 
     protected abstract void onGooglePlayAvailable();
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        getWindow().setBackgroundDrawable(null);
+    }
 }

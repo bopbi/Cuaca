@@ -31,6 +31,7 @@ public class CuacaService extends Service {
     private static final long LOCATION_TIMEOUT_SECONDS = 20;
     private RestAdapter restAdapter;
     private OpenWeatherApi openWeatherApi;
+    private boolean onGoing = false;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -40,26 +41,35 @@ public class CuacaService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
-        if (restAdapter == null) {
-            restAdapter = new RestAdapter.Builder()
-                    .setEndpoint("http://api.openweathermap.org")
-                    .setClient(new OkClient())
-                    .build();
+        if (intent != null) {
+            if (restAdapter == null) {
+                restAdapter = new RestAdapter.Builder()
+                        .setEndpoint("http://api.openweathermap.org")
+                        .setClient(new OkClient())
+                        .build();
 
-            openWeatherApi = restAdapter.create(OpenWeatherApi.class);
+                openWeatherApi = restAdapter.create(OpenWeatherApi.class);
+            }
+
+            if (!onGoing) {
+                onGoing = true;
+                int command = intent.getIntExtra(IntentKey, -1);
+                switch (command) {
+                    case GET_LOCATION:
+                        updateLocation();
+                        break;
+                    case GET_WEATHER:
+                        updateWeather(intent.getDoubleExtra(LAT, 0), intent.getDoubleExtra(LNG, 0));
+                        break;
+
+                }
+            }
+            return START_STICKY;
+        } else {
+
+            stopSelf();
+            return START_NOT_STICKY;
         }
-
-        int command = intent.getIntExtra(IntentKey, -1);
-        switch (command) {
-            case GET_LOCATION:
-                updateLocation();
-                break;
-            case GET_WEATHER:
-                updateWeather(intent.getDoubleExtra(LAT, 0), intent.getDoubleExtra(LNG, 0));
-                break;
-
-        }
-        return START_STICKY;
     }
 
     private void updateLocation() {
@@ -74,7 +84,7 @@ public class CuacaService extends Service {
 
             @Override
             public void onError(Throwable e) {
-
+                stopSelf();
             }
 
             @Override
@@ -91,12 +101,13 @@ public class CuacaService extends Service {
                .subscribe(new Observer<CurrentWeather>() {
                    @Override
                    public void onCompleted() {
-
+                        stopSelf();
                    }
 
                    @Override
                    public void onError(Throwable e) {
                        Log.e("Cuaca", "Error");
+                       stopSelf();
                    }
 
                    @Override

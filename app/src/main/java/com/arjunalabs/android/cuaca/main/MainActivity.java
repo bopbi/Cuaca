@@ -1,14 +1,13 @@
 package com.arjunalabs.android.cuaca.main;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.arjunalabs.android.cuaca.R;
 import com.arjunalabs.android.cuaca.base.BaseLocationActivity;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
 /**
@@ -54,18 +53,17 @@ public class MainActivity extends BaseLocationActivity {
     public void onConnected(Bundle connectionHint) {
         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(
                 mGoogleApiClient);
+        Intent i = new Intent(this, CuacaService.class);
         if (mLastLocation != null) {
-            Toast.makeText(this, String.valueOf(mLastLocation.getLatitude()) + " , "+ String.valueOf(mLastLocation.getLongitude()), Toast.LENGTH_SHORT).show();
+            // update weather information
+            i.putExtra(CuacaService.IntentKey, CuacaService.GET_WEATHER);
+            i.putExtra(CuacaService.LAT, mLastLocation.getLatitude());
+            i.putExtra(CuacaService.LNG, mLastLocation.getLongitude());
         } else {
-            Toast.makeText(this,"Location is null", Toast.LENGTH_SHORT).show();
+            // update location first
+            i.putExtra(CuacaService.IntentKey, CuacaService.GET_LOCATION);
         }
-    }
-
-    protected void createLocationRequest() {
-        LocationRequest mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(10000);
-        mLocationRequest.setFastestInterval(5000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        startService(i);
     }
 
     @Override
@@ -88,4 +86,6 @@ public class MainActivity extends BaseLocationActivity {
     protected void onGooglePlayAvailable() {
         buildGoogleApiClient();
     }
+
+
 }

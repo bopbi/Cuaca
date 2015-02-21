@@ -1,6 +1,7 @@
 package com.arjunalabs.android.cuaca.main;
 
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.widget.Toast;
 
 import com.arjunalabs.android.cuaca.R;
@@ -28,6 +29,8 @@ public class MainActivity extends BaseLocationActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         mainView = (MainView) findViewById(R.id.main_view);
         checkGooglePlayServicesAvailable();
     }
@@ -52,8 +55,7 @@ public class MainActivity extends BaseLocationActivity {
 
                     @Override
                     public void onNext(CuacaEvent cuacaEvent) {
-                        Toast.makeText(MainActivity.this, cuacaEvent.getCurrentWeather().getWeather().get(0).getDescription(), Toast.LENGTH_LONG)
-                                .show();
+                        mainView.setTodayWeather(cuacaEvent.getCurrentWeather().getWeather().get(0).getDescription());
                     }
                 });
     }

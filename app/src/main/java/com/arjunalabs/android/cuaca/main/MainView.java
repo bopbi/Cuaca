@@ -6,6 +6,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import com.arjunalabs.android.cuaca.R;
 
@@ -25,6 +26,7 @@ public class MainView extends LinearLayout {
     }
 
     Location lastLocation;
+    TextView textView;
 
     public MainView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -41,5 +43,11 @@ public class MainView extends LinearLayout {
                 mainPresenter.refresh(getContext(), lastLocation);
             }
         });
+
+        textView = (TextView) findViewById(R.id.today_weather_text);
+    }
+
+    public void setTodayWeather(String description) {
+        textView.setText(description);
     }
 }

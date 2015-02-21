@@ -4,10 +4,22 @@
     android:layout_height="match_parent"
     android:id="@+id/main_view"
     android:background="#fff">
-
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?actionBarSize"
+        android:background="?colorPrimary"/>
     <Button
         android:id="@+id/button_refresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Refresh"/>
+    <TextView
+        android:id="@+id/today_weather_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Today Weather"
+        android:textColor="#000"
+        android:textSize="24dp"/>
 </com.arjunalabs.android.cuaca.main.MainView>
